@@ -6,10 +6,10 @@ require 'active_type/version'
 Gem::Specification.new do |gem|
   gem.name          = "active_type"
   gem.version       = ActiveType::VERSION
-  gem.authors       = ["TODO: Write your name"]
-  gem.email         = ["TODO: Write your email address"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.authors       = ["Vsevolod Orlov"]
+  gem.email         = ["vseorlov@gmail.com"]
+  gem.description   = %q{Adds PostgreSQL user defined data types support for Active Record}
+  gem.summary       = %q{You should extend Active Type class to define your type}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
