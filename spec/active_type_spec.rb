@@ -1,7 +1,35 @@
 require 'active_type'
 
 describe "ActiveType" do
+  class Address < ActiveType
+     property :city
+     property :street
+     property :postal_code
+  end
+  
+  
+  class Person < ActiveRecord::Base
+     serialize Address
+  end
+  
+  let(:connection_hash) { {database: 'test-active-type'} }
 
+  before(:all) do
+     ActiveRecord::Base.establish_connection(connection_hash)
+     ActiveRecord::Base.connection.execute <<-SQL
+        DROP TYPE IF EXISTS Address;
+        DROP TABLE IF EXISTS people;
+        CREATE TYPE Address (city varchar, street varchar, zip varchar);
+        CREATE TABLE people ( name varchar, address Address);
+     SQL
+  end
+  
+  it "should work :)" do
+    person = Person.create!( name: 'Ivan Groznij', address: Address.new( city: 'Moscow'))
+    person.reload
+    person.address.city.should == 'Moscow'
+  end
+  
   it "serialize a type" do
     ActiveType.add_properties [:pr1, :pr2, :pr3] 
     type = ActiveType.new
