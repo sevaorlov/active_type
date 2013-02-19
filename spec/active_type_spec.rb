@@ -9,8 +9,8 @@ describe "ActiveType" do
     end
         
     class Person < ActiveRecord::Base
+       attr_accessible :name, :address
        serialize :address, Address
-       attr_accessor :name
     end
       
     let(:connection_hash) { { 
@@ -27,12 +27,12 @@ describe "ActiveType" do
 	DROP TYPE IF EXISTS Address CASCADE;
         DROP TABLE IF EXISTS people CASCADE;
         CREATE TYPE Address AS (city varchar, street varchar, zip varchar);
-        CREATE TABLE people ( name varchar, address Address);
+        CREATE TABLE people (id serial NOT NULL, name varchar, address Address, CONSTRAINT people_pkey PRIMARY KEY (id ));
       SQL
     end
       
     it "should work :)" do
-      person = Person.create!( name: 'Ivan Groznij', address: Address.new( city: 'Moscow'))
+      person = Person.create!(name: 'Ivan Groznij', address: Address.new( city: 'Moscow'))
       person.reload
       person.address.city.should == 'Moscow'
     end
@@ -44,6 +44,14 @@ describe "ActiveType" do
       properties :pr1, :pr2, :pr3
     end
     
+    class SomeAnotherType < ActiveType
+      properties :one, :two, :three
+    end
+
+    class SomeThirdType < ActiveType
+      properties :one, :two, :three
+    end
+    
     it "serialize a type" do             
       type = SomeType.new
       type.pr1 = 'pr1_text'
@@ -53,14 +61,14 @@ describe "ActiveType" do
     end
           
     it "deserialize a type" do         
-      type = SomeType.load("(moskow,mohovaya,28)")
-      type.pr1.should eql("moskow") 
-      type.pr2.should eql("mohovaya")
-      type.pr3.should eql("28")
+      type = SomeAnotherType.load("(moskow,mohovaya,28)")
+      type.one.should eql("moskow") 
+      type.two.should eql("mohovaya")
+      type.three.should eql("28")
     end
           
     it "raise error when properties not equal on deserialization" do          
-      expect{SomeType.load("(moskow,mohovaya,28,sometext)")}.to raise_error
+      expect{SomeThirdType.load("(moskow,mohovaya,28,sometext)")}.to raise_error
     end
   end  
   
