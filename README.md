@@ -9,7 +9,7 @@ To use it you should:
 
 2) Extend ActiveType::TypeClass class and define your own type class properties:
     
-    add_properties [:property1, :property2, :property3] 
+    properties :property1, :property2, :property3
 
 3) Also you should manualy specify new column in your model table:
     
