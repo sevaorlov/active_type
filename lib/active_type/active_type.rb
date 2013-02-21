@@ -1,13 +1,23 @@
 class ActiveType
-  @@properties = []
+
+  @@props = {}
+
+  def initialize hash=nil 
+
+    if hash
+      hash.each do |key, value|
+        instance_variable_set("@#{key}", value)
+      end
+    end
+  end
 
   def self.load str
     vals = str[1, str.length-2].split(",")
-    raise "Wrong type attributes!" if vals.length != @@properties.length
+    raise "Wrong type attributes!" if vals.length != @@props[self].length
 
     i = 0
     type = self.new
-    @@properties.each do |property|
+    @@props[self].each do |property|
       type.send "#{property}=", vals[i]
       i += 1
     end
@@ -17,22 +27,24 @@ class ActiveType
   def self.dump type
     str = '('
     first = true
-    type.instance_variables.each do |property|          
+    @@props[self].each do |property|          
       if !first
 	str << ','
       else
         first = false
       end
-      str << "\"#{type.instance_variable_get(property)}\""
+      property = "@#{property}"
+      v = (type.instance_variable_defined?(property) ? type.instance_variable_get(property) : '')
+      str << "\"#{v}\""
     end
-    str << ')'      
+    str << ')'
   end
   
   def self.properties *params
-    @@properties = []   
     params.each do |property|
       class_eval { attr_accessor property}
-      @@properties << property
+      (@@props[self] ||=  []) << property
     end
   end
+
 end
