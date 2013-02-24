@@ -13,11 +13,11 @@ class ActiveType
 
   def self.load str
     vals = str[1, str.length-2].split(",")
-    raise "Wrong type attributes!" if vals.length != @@props[self].length
+    raise "Wrong type attributes!" if vals.length != @@props[self.to_s].length
 
     i = 0
     type = self.new
-    @@props[self].each do |property|
+    @@props[self.to_s].each do |property|
       type.send "#{property}=", vals[i]
       i += 1
     end
@@ -27,7 +27,7 @@ class ActiveType
   def self.dump type
     str = '('
     first = true
-    @@props[self].each do |property|          
+    @@props[self.to_s].each do |property|          
       if !first
 	str << ','
       else
@@ -40,10 +40,10 @@ class ActiveType
     str << ')'
   end
   
-  def self.properties *params
+  def self.properties *params  
     params.each do |property|
       class_eval { attr_accessor property}
-      (@@props[self] ||=  []) << property
+      (@@props[self.to_s] ||=  []) << property
     end
   end
 
