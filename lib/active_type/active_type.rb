@@ -38,17 +38,14 @@ class ActiveType
     str << ')'
   end
   
-  def self.properties *params  
+  def self.property pty
 
     if !self.class.instance_variable_defined?(:@props)
       self.class.class_eval { attr_accessor :props}
     end      
 
-    params.each do |property|
-      class_eval { attr_accessor property}
-      (@props ||=  []) << property
-    end
-
+    class_eval { attr_accessor pty}
+    (@props ||=  []) << pty
   end 
 
   def self.get_properties

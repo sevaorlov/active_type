@@ -5,7 +5,9 @@ describe "ActiveType" do
 
   describe "with db" do 
     class Address < ActiveType
-       properties :city, :street, :postal_code
+      property :city
+      property :street
+      property :postal_code
     end
         
     class Person < ActiveRecord::Base
@@ -41,15 +43,21 @@ describe "ActiveType" do
   describe "serialization" do
   
     class SomeType < ActiveType
-      properties :pr1, :pr2, :pr3
+      property :pr1
+      property :pr2
+      property :pr3
     end
     
     class SomeAnotherType < ActiveType
-      properties :one, :two, :three
+      property :one
+      property :two
+      property :three
     end
 
     class SomeThirdType < ActiveType
-      properties :one, :two, :three
+      property :one
+      property :two
+      property :three
     end
     
     it "serialize a type" do             
