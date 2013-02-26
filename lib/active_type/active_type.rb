@@ -38,7 +38,7 @@ class ActiveType
     str << ')'
   end
   
-  def self.property pty
+  def self.property(pty, type=:string)
 
     if !self.class.instance_variable_defined?(:@props)
       self.class.class_eval { attr_accessor :props}
