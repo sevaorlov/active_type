@@ -1,7 +1,5 @@
 class ActiveType
 
-  @@props = {}
-
   def initialize hash=nil 
 
     if hash
@@ -13,11 +11,11 @@ class ActiveType
 
   def self.load str
     vals = str[1, str.length-2].split(",")
-    raise "Wrong type attributes!" if vals.length != @@props[self.name].length
+    raise "Wrong type attributes!" if vals.length != get_properties.length
 
     i = 0
     type = self.new
-    @@props[self.name].each do |property|
+    get_properties.each do |property|
       type.send "#{property}=", vals[i]
       i += 1
     end
@@ -27,7 +25,7 @@ class ActiveType
   def self.dump type
     str = '('
     first = true
-    @@props[self.name].each do |property|          
+    get_properties.each do |property|          
       if !first
 	str << ','
       else
@@ -41,10 +39,20 @@ class ActiveType
   end
   
   def self.properties *params  
+
+    if !self.class.instance_variable_defined?(:@props)
+      self.class.class_eval { attr_accessor :props}
+    end      
+
     params.each do |property|
       class_eval { attr_accessor property}
-      (@@props[self.name] ||=  []) << property
+      (@props ||=  []) << property
     end
+
+  end 
+
+  def self.get_properties
+    (@props ||= [])
   end
 
 end
