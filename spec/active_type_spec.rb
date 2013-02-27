@@ -20,9 +20,9 @@ describe "ActiveType" do
       CREATE TABLE people (id serial NOT NULL, name varchar, address Address, CONSTRAINT people_pkey PRIMARY KEY (id ));
 
       DROP TYPE IF EXISTS ManyDataTypesType CASCADE;
-      DROP TABLE IF EXISTS manytypesmodel CASCADE;
+      DROP TABLE IF EXISTS many_types_models CASCADE;
       CREATE TYPE ManyDataTypesType AS (binary_type bytea, boolean_type boolean, date_type date, datetime_type timestamp, decimal_type decimal, float_type float, integer_type integer, string_type character varying, text_type text, time_type time, timestamp_type timestamp);
-      CREATE TABLE manytypesmodel (id serial NOT NULL, name varchar, many_data_types_type ManyDataTypesType, CONSTRAINT manytypesmodel_pkey PRIMARY KEY (id ));
+      CREATE TABLE many_types_models (id serial NOT NULL, name varchar, mdtt ManyDataTypesType, CONSTRAINT manytypesmodel_pkey PRIMARY KEY (id ));
     SQL
   end
 
@@ -102,8 +102,40 @@ describe "ActiveType" do
     end
 
     class ManyTypesModel < ActiveRecord::Base
-      attr_accessible :name, :many_data_types_type
-      serialize :many_data_types_type, ManyDataTypesType
+      attr_accessible :name, :mdtt
+      serialize :mdtt, ManyDataTypesType
+    end
+    
+    it "should work" do
+      binary_var = "1101"
+      boolean_var = true
+      date_var = Date.new(2011, 11, 3)
+      datetime_var = Date.new(2012, 12, 21).to_datetime
+      decimal_var = BigDecimal.new("0.0001")
+      float_var = 104.21
+      integer_var = 318
+      string_var = "some random string"
+      text_var = "some random very long text"
+      time_var = Time.new(1998, 5, 9)
+      timestamp_var = Time.new(1999, 4, 14).getutc    
+
+      many_model = ManyTypesModel.create!(name: 'some random name', 
+	mdtt: ManyDataTypesType.new(binary_type: binary_var, boolean_type: boolean_var, 
+	  date_type: date_var, datetime_type: datetime_var, decimal_type: decimal_var, 
+	  float_type: float_var, integer_type: integer_var, string_type: string_var, 
+	  text_type: text_var, time_type: time_var, timestamp_type: timestamp_var))
+      many_model.reload
+      many_model.mdtt.binary_type.should == binary_var
+      many_model.mdtt.boolean_type.should == boolean_var
+      many_model.mdtt.date_type.should == date_var
+      many_model.mdtt.datetime_type.should == datetime_var
+      many_model.mdtt.decimal_type.should == decimal_var
+      many_model.mdtt.float_type.should == float_var
+      many_model.mdtt.integer_type.should == integer_var
+      many_model.mdtt.string_type.should == string_var
+      many_model.mdtt.text_type.should == text_var
+      many_model.mdtt.time_type.should == time_var
+      many_model.mdtt.timestamp_type.should == timestamp_var
     end
 
   end 
