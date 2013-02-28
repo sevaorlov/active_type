@@ -18,7 +18,7 @@ class ActiveType
     i = 0
     type = self.new
     get_properties.each do |property|
-      type.send "#{property.name}=", vals[i]
+      type.send "#{property.name}=", property.type_cast(vals[i])
       i += 1
     end
     type
