@@ -127,7 +127,7 @@ describe "ActiveType" do
     end
             
     it "should work" do
-      binary_var = "some string for binary"
+      binary_var = "some string for binary type"
       boolean_var = true
       date_var = Date.new(2011, 11, 3)
       datetime_var = Time.new(2012, 12, 21, 12, 11, 9)
@@ -158,8 +158,8 @@ describe "ActiveType" do
       many_model.mdtt.text_type.class.should == text_var.class
       many_model.mdtt.time_type.class.should == time_var.class
       many_model.mdtt.timestamp_type.class.should == timestamp_var.class
-      
-      #many_model.mdtt.binary_type.should == binary_var
+         
+      ActiveRecord::Base.connection.unescape_bytea(many_model.mdtt.binary_type.gsub(/\\\\/,"\\")).should == binary_var
       many_model.mdtt.boolean_type.should == boolean_var
       many_model.mdtt.date_type.should == date_var
       many_model.mdtt.datetime_type.should == datetime_var
