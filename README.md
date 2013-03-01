@@ -3,13 +3,16 @@
 This gem adds PostgreSQL user defined types support for Active Record (Ruby on Rails).
 
 To use it you should:
+
 1) Create a new class in PostgreSQL: 
     
-    CREATE TYPE your_type AS (property1 varchar, property2 varchar, property3 varchar);
+    CREATE TYPE your_type AS (property1 varchar, property2 datetime, property3 text);
 
 2) Extend ActiveType::TypeClass class and define your own type class properties:
     
-    properties :property1, :property2, :property3
+    property :property1, :string
+    property :property2, :datetime
+    property :property3, :text
 
 3) Also you should manualy specify new column in your model table:
     
