@@ -3,7 +3,6 @@ require 'active_type/property'
 class ActiveType
 
   def initialize hash=nil 
-
     if hash
       hash.each do |key, value|
         instance_variable_set("@#{key}", value)
@@ -11,35 +10,32 @@ class ActiveType
     end
   end
 
-  def self.load str
-    vals = str[1, str.length-2].split(",")
-    raise "Wrong type attributes!" if vals.length != get_properties.length
-
+  # deserialize type object
+  def self.load str    
+    # remove braces and quotes, that comes from db with strings
+    vals = str.gsub(/[\(\)\"]/,"").split(",", -1)
+    
+    raise "ActiveType properties doesnt match db type properties!" if vals.length != get_properties.length
+    
     i = 0
-    type = self.new
+    inst = self.new
     get_properties.each do |property|
-      type.send "#{property.name}=", property.type_cast(vals[i])
+      inst.instance_variable_set(property.var_name, property.type_cast(vals[i]))
       i += 1
     end
-    type
+    inst
   end
 
-  def self.dump type
+  # serialize type object
+  def self.dump inst
     str = '('
-    first = true
-    get_properties.each do |property|          
-      if !first
-	str << ','
-      else
-        first = false
-      end
-      property_name = "@#{property.name}"
-      v = (type.instance_variable_defined?(property_name) ? type.instance_variable_get(property_name) : '')
-      str << "\"#{v}\""
-    end
-    str << ')'
+    get_properties.each do |property|
+      str << "\"#{inst.instance_variable_get(property.var_name)}\","
+    end        
+    str.chop << ')'    
   end
   
+  # adds new property with its type
   def self.property(name, type=:string)
 
     if !self.class.instance_variable_defined?(:@props)
@@ -50,6 +46,7 @@ class ActiveType
     (@props ||=  []) << Property.new(name, type)
   end 
 
+  # returns type object properties
   def self.get_properties
     (@props ||= [])
   end
