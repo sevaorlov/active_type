@@ -173,12 +173,7 @@ describe "ActiveType" do
     end
     
     it "should work even if they are empty" do
-      project_name = "ONETWO"
-      project_type = "StartUP"
-      company = Company.create!(name: 'Cool Company', project: Project.new( name: project_name, project_type: project_type))
-      company.reload
-      company.project.name.should == project_name
-      company.project.project_type.should == project_type
+      expect { Company.create!(name: 'Cool Company', project: Project.new( name: "ONETWO", project_type: "startup"))}.to_not raise_error
     end
 
   end 

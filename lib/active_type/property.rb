@@ -18,10 +18,10 @@ class Property
   def var_name
     "@#{@name}"
   end  
-  
+
   private
   def column
-    @column = PostgreSQLColumn.new(@name, "", @type) if @column.nil?
+    @column = PostgreSQLColumn.new(@name, nil, @type) if @column.nil?
     @column
   end
   

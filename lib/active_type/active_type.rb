@@ -30,7 +30,11 @@ class ActiveType
   def self.dump inst
     str = '('
     get_properties.each do |property|
-      str << "\"#{inst.instance_variable_get(property.var_name)}\","
+      if inst.instance_variable_defined?(property.var_name)
+	str << "\"#{inst.instance_variable_get(property.var_name)}\","
+      else
+	str << ","
+      end
     end        
     str.chop << ')'    
   end
