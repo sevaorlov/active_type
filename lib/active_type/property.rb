@@ -7,11 +7,12 @@ class Property
 
   def initialize name, type
     @name = name
-    @type = type
+    @type = convert_type type
   end
 
   # cast value to an appropriate instance
   def type_cast value
+    #p "cast #{value} to #{@type}"
     column.type_cast value    
   end
     
@@ -23,6 +24,15 @@ class Property
   def column
     @column = PostgreSQLColumn.new(@name, nil, @type) if @column.nil?
     @column
+  end
+
+  # sometimes
+  def convert_type t
+    case t.to_s
+    when "bool"
+      return "boolean"
+    end
+    return t
   end
   
 end

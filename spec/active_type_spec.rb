@@ -33,9 +33,6 @@ describe "ActiveType" do
 
   describe "with db" do 
     class Address < ActiveType
-      property :city
-      property :street
-      property :postal_code
     end
         
     class Person < ActiveRecord::Base
@@ -93,17 +90,6 @@ describe "ActiveType" do
   describe "with types" do 
 
     class ManyDataTypesType < ActiveType
-      property :binary_type, :binary
-      property :boolean_type, :boolean
-      property :date_type, :date
-      property :datetime_type, :datetime
-      property :decimal_type, :decimal
-      property :float_type, :float
-      property :integer_type, :integer
-      property :string_type, :string
-      property :text_type, :text
-      property :time_type, :time
-      property :timestamp_type, :timestamp
     end
 
     class ManyTypesModel < ActiveRecord::Base
@@ -112,13 +98,6 @@ describe "ActiveType" do
     end
     
     class Project < ActiveType
-      property :name, :string
-      property :started, :datetime
-      property :new_project, :boolean
-      property :employees_number, :integer
-      property :some_time, :time
-      property :something, :binary 
-      property :project_type, :string      
     end
 
     class Company < ActiveRecord::Base
