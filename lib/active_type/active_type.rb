@@ -116,7 +116,7 @@ class ActiveType
   end
 
   def self.replace_comma str
-    comma = "$%comma%$"
+    comma = "$%%$"
     if str.include? comma 
       return str.gsub(comma, ",")
     else
