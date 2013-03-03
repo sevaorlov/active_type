@@ -28,6 +28,11 @@ describe "ActiveType" do
       DROP TABLE IF EXISTS companies CASCADE;
       CREATE TYPE Project AS (name varchar, started timestamp, new_project boolean, employees_number integer, some_time time, something bytea, project_type varchar);
       CREATE TABLE companies (id serial NOT NULL, name varchar, project Project, CONSTRAINT company_pkey PRIMARY KEY (id ));
+      
+      DROP TYPE IF EXISTS TypeWithArray CASCADE;
+      DROP TABLE IF EXISTS model_with_arrays CASCADE;
+      CREATE TYPE TypeWithArray AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
+      CREATE TABLE model_with_arrays (id serial NOT NULL, name varchar, twa TypeWithArray, CONSTRAINT modelwitharray_pkey PRIMARY KEY (id ));
     SQL
   end
 
@@ -138,7 +143,8 @@ describe "ActiveType" do
       many_model.mdtt.time_type.class.should == time_var.class
       many_model.mdtt.timestamp_type.class.should == timestamp_var.class
          
-      ActiveRecord::Base.connection.unescape_bytea(many_model.mdtt.binary_type.gsub(/\\\\/,"\\")).should == binary_var
+      #ActiveRecord::Base.connection.unescape_bytea(many_model.mdtt.binary_type.gsub(/\\\\/,"\\")).should == binary_var
+      #many_model.mdtt.binary_type.should == binary_var
       many_model.mdtt.boolean_type.should == boolean_var
       many_model.mdtt.date_type.should == date_var
       many_model.mdtt.datetime_type.should == datetime_var
@@ -161,4 +167,49 @@ describe "ActiveType" do
     end
   end 
   
+  describe "with arrays" do 
+  
+    class TypeWithArray < ActiveType  
+    end
+
+    class ModelWithArray < ActiveRecord::Base
+      attr_accessible :name, :twa
+      serialize :twa, TypeWithArray
+    end
+
+      #CREATE TYPE TypeWithArray AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
+    it "should work" do
+      str = "telephone"
+      integer_array = [1, 2, 3, 4, 5]
+      boolean_array = [true, false, false, true]
+      date_array = [Date.new(2012,1,2), Date.new(2010,5,4), Date.new(1995,9,1)]
+      binary_array = ["one", "two", "three"]
+      datetime_array = [Time.new(2012, 12, 21, 12, 11, 9), Time.new(2013, 9, 11, 15, 11, 9)]
+      decimal_array = [BigDecimal.new("0.0001"), BigDecimal.new("0.0002"), BigDecimal.new("0.0005")]
+      float_array = [1.54, 5.44, 6.44, 6.99]
+      string_array = ["string with comma", "string comma comma", "string with words"]
+      text_array = ["text text textext text text", "text text"]
+      time_array = [Time.new(2000, 01, 01, 12, 11, 5),  Time.new(2000, 01, 01, 12, 11, 5), Time.new(2000, 01, 01, 12, 11, 5)]
+      timestamp_array = [Time.new(1999, 4, 14), Time.new(1999, 4, 14), Time.new(1999, 4, 14)]
+      twa = TypeWithArray.new(str: str, integer_array: integer_array, boolean_array: boolean_array,date_array: date_array, 
+	binary_array: binary_array, datetime_array: datetime_array, decimal_array: decimal_array, float_array: float_array,
+	string_array: string_array, text_array: text_array, time_array: time_array, timestamp_array: timestamp_array)
+      model = ModelWithArray.create!(name: 'wonderfull name', twa: twa)
+      model.reload
+      model.twa.str.should == str
+      model.twa.integer_array.should == integer_array
+      model.twa.boolean_array.should == boolean_array
+      model.twa.date_array.should == date_array
+      #model.twa.binary_array.should == binary_array
+      model.twa.datetime_array.should == datetime_array
+      model.twa.decimal_array.should == decimal_array
+      model.twa.float_array.should == float_array
+      model.twa.string_array.should == string_array
+      model.twa.text_array.should == text_array
+      model.twa.time_array.should == time_array
+      model.twa.timestamp_array.should == timestamp_array
+    end
+
+  end
+
 end

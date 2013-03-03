@@ -16,14 +16,34 @@ class ActiveType
     get_type_properties_from_db
 
     # remove braces and quotes, that comes from db with strings
-    vals = str.gsub(/[\(\)\"]/,"").split(",", -1)
+    str = str.gsub(/[\(\)\"]/,"")
+    # store all arrays 
+    arrays =[]
+    str = str.gsub(/{.+?}/) do |item|       
+      arrays << item.gsub(/[{}]/, "")      
+      item = arrays.length - 1
+    end
     
-    raise "ActiveType properties doesnt match db type properties!" if vals.length != get_properties.length
+    vals = str.split(",", -1)
+    #p "load values: #{vals.to_s}"    
+
+    if vals.length != get_properties.length
+      raise "ActiveType properties doesnt match db type properties! Expected: #{get_properties.length} Got: #{vals.length}"
+    end
     
     i = 0
     inst = self.new
     get_properties.each do |property|
-      inst.instance_variable_set(property.var_name, property.type_cast(vals[i]))
+      value = vals[i]
+      if property.array?
+	value = arrays[value.to_i]
+	raise "Wrong input for casting an array!" if value.nil?
+	value = value.split(",").collect{ |item| property.type_cast(item) }	
+      else
+	value = property.type_cast(value)
+      end
+      
+      inst.instance_variable_set(property.var_name, value)
       i += 1
     end
     inst
@@ -36,7 +56,16 @@ class ActiveType
     str = '('
     get_properties.each do |property|
       if inst.instance_variable_defined?(property.var_name)
-	str << "\"#{inst.instance_variable_get(property.var_name)}\","
+	v = inst.instance_variable_get(property.var_name)
+	if property.array? 	  
+	  raise "Property that is marked as array is not realy an array!" if !v.kind_of?(Array)
+	  v = v.collect{ |item| item.to_s }.to_s	
+	  v[0]="{"
+	  v[v.length-1]="}"
+	end      
+	# TODO: escape all symbols
+	v = v.to_s.gsub(/,/, "\,") if v.kind_of? String
+	str << "\"#{v}\","
       else
 	str << ","
       end

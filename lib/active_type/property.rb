@@ -3,22 +3,28 @@ require 'active_record'
 class Property
   include ActiveRecord::ConnectionAdapters 
  
-  attr_accessor :name, :type, :column
+  attr_accessor :name, :type, :column, :array
 
   def initialize name, type
     @name = name
+    @array = (type.to_s[0] == "_")
+    type[0] = '' if @array
     @type = convert_type type
   end
 
   # cast value to an appropriate instance
   def type_cast value
     #p "cast #{value} to #{@type}"
-    column.type_cast value    
+    column.type_cast value       
   end
     
   def var_name
     "@#{@name}"
   end  
+
+  def array?
+    @array
+  end
 
   private
   def column
@@ -26,7 +32,7 @@ class Property
     @column
   end
 
-  # sometimes
+  # sometimes 
   def convert_type t
     case t.to_s
     when "bool"
