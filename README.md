@@ -2,28 +2,6 @@
 
 This gem adds PostgreSQL user defined types support for Active Record (Ruby on Rails).
 
-To use it you should:
-
-1) Create a new class in PostgreSQL: 
-    
-    CREATE TYPE your_type AS (property1 varchar, property2 datetime, property3 text);
-
-2) Extend ActiveType::TypeClass class and define your own type class properties:
-    
-    property :property1, :string
-    property :property2, :datetime
-    property :property3, :text
-
-3) Also you should manualy specify new column in your model table:
-    
-    add_column :model_table_name, :your_type_name, :your_type
-
-4) Then you should use 
-
-    serialize :your_type_name, YourTypeClass
-
-in your model.
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -40,7 +18,20 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+1) Create a new class in PostgreSQL: 
+    
+    CREATE TYPE your_type AS (property1 varchar, property2 datetime, property3 text);
+
+2) Specify new column in your model table:
+    
+    add_column :model_table_name, :your_type_name, :your_type
+
+3) Specify in your model 
+
+    serialize :your_type_name, YourTypeClass
+
+in your model.
+Write usage instructions here
 
 ## Contributing
 
