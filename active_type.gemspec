@@ -21,4 +21,5 @@ Gem::Specification.new do |gem|
   
   gem.add_dependency 'pg', '~> 0.14.0'
   gem.add_dependency 'activerecord', '~> 3.2.0'
+  gem.add_dependency 'pg_array_parser', '~> 0.0.8'
 end

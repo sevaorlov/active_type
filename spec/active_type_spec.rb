@@ -187,8 +187,8 @@ describe "ActiveType" do
       datetime_array = [Time.new(2012, 12, 21, 12, 11, 9), Time.new(2013, 9, 11, 15, 11, 9)]
       decimal_array = [BigDecimal.new("0.0001"), BigDecimal.new("0.0002"), BigDecimal.new("0.0005")]
       float_array = [1.54, 5.44, 6.44, 6.99]
-      string_array = ["string with comma,", "string, comma comma", "string with words"]
-      text_array = ["text text text,text text text", "text text"]
+      string_array = ["string with comma", "string comma comma", "string with words"]
+      text_array = ["text text textext text text", "text text"]
       time_array = [Time.new(2000, 01, 01, 12, 11, 5),  Time.new(2000, 01, 01, 12, 11, 5), Time.new(2000, 01, 01, 12, 11, 5)]
       timestamp_array = [Time.new(1999, 4, 14), Time.new(1999, 4, 14), Time.new(1999, 4, 14)]
       twa = TypeWithArray.new(str: str, integer_array: integer_array, boolean_array: boolean_array,date_array: date_array, 
@@ -210,6 +210,15 @@ describe "ActiveType" do
       model.twa.timestamp_array.should == timestamp_array
     end
 
+  end
+  
+  describe "with nested types" do
+
+    class TypeWithNestedTypes < ActiveType      
+    end
+
+    it "should work" do 
+    end
   end
 
 end

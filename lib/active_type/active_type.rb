@@ -1,5 +1,6 @@
-require 'active_type/property'
 require 'active_record'
+require 'active_type/property'
+require 'active_type/postgresql_array_parser'
 
 class ActiveType
 
@@ -19,34 +20,23 @@ class ActiveType
   def self.load str    
     get_type_properties_from_db
 
-    # remove braces and quotes, that comes from db with strings
-    str = str.gsub(/[\(\)\"]/,"")
+    str[0]="{"
+    str[str.length-1]="}"
+    values = parser.parse_pg_array(str)
+    #p "load: #{values.to_s}"
 
-    # store all arrays 
-    arrays =[]
-    str = str.gsub(/{.+?}/) do |item|       
-      arrays << item.gsub(/[{}]/, "")      
-      item = arrays.length - 1
-    end
-   
-    vals = str.split(",", -1)
-    #p "load values: #{vals.to_s}"   
-
-    if vals.length != get_properties.length
-      p "error: #{str}"
-      raise "ActiveType properties doesnt match db type properties! Expected: #{get_properties.length} Got: #{vals.length}"
+    if values.length != get_properties.length
+      raise "ActiveType properties doesnt match db type properties! Expected: #{get_properties.length} Got: #{values.length}"
     end
     
     i = 0
     inst = self.new
     get_properties.each do |property|
-      value = vals[i]
+      value = values[i]
       if property.array?
-	value = arrays[value.to_i]
-	raise "Wrong input for casting an array!" if value.nil?
-	value = value.split(",").collect{ |item| property.type_cast(replace_comma(item)) }	
+	value = parser.parse_pg_array(value).collect{ |item| property.type_cast(item) }	
       else
-	value = property.type_cast(replace_comma(value))
+	value = property.type_cast(value)
       end
       
       inst.instance_variable_set(property.var_name, value)
@@ -65,18 +55,16 @@ class ActiveType
 	v = inst.instance_variable_get(property.var_name)
 	if property.array? 	  
 	  raise "Property that is marked as array is not realy an array!" if !v.kind_of?(Array)
-	  v = v.collect{ |item| replace_comma(item.to_s) }.to_s	
-	  v[0]="{"
-	  v[v.length-1]="}"
+	  v = v.collect{ |item| item.to_s }.to_s
+	  v[0]="\"{"
+	  v[v.length-1]="}\""
 	else      
-	  v = replace_comma(v.to_s)
+	  v = PGconn.quote_ident(v.to_s.gsub(/,/,"\,"))
 	end
-	# TODO: escape all symbols
-	str << "\"#{v}\","
-      else
-	str << ","
+	str << "#{v}"
       end
-    end        
+      str << ","
+    end
     str.chop << ')'        
   end
 
@@ -114,12 +102,8 @@ class ActiveType
     (@props ||= [])
   end
 
-  def self.replace_comma str
-    comma = "$%%$"
-    if str.include? comma 
-      return str.gsub(comma, ",")
-    else
-      return str.gsub(/,/, comma)
-    end
+  def self.parser
+    @parser = MyPostgresParser.new if @parser.nil?
+    @parser
   end
 end
