@@ -3,7 +3,7 @@ require 'active_record'
 class Property
   include ActiveRecord::ConnectionAdapters 
  
-  attr_accessor :name, :type, :column, :array
+  attr_accessor :name, :type
 
   def initialize name, type
     @name = name

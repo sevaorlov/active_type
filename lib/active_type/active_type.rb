@@ -3,6 +3,10 @@ require 'active_record'
 
 class ActiveType
 
+  class << self
+      attr_accessor :props
+  end
+
   def initialize hash=nil 
     if hash
       hash.each do |key, value|
@@ -101,11 +105,6 @@ class ActiveType
 
   # adds new property with its type
   def self.property(name, type=:string)
-
-    if !self.class.instance_variable_defined?(:@props)
-      self.class.class_eval { attr_accessor :props}
-    end      
-
     class_eval { attr_accessor name}
     (@props ||=  []) << Property.new(name, type)
   end  
