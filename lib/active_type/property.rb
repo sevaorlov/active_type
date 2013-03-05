@@ -10,6 +10,7 @@ class Property
     @array = (type.to_s[0] == "_")
     type[0] = '' if @array
     @type = convert_type type
+    #p "new property #{@name}, #{@type}, array=#{@array}"
   end
 
   # cast value to an appropriate instance
@@ -26,13 +27,20 @@ class Property
     @array
   end
 
+  def nested?
+    if @nested.nil?
+      @nested = column.type.nil?
+      @column = nil if @nested
+    end
+    @nested
+  end
+
   private
   def column
     @column = PostgreSQLColumn.new(@name, nil, @type) if @column.nil?
     @column
   end
 
-  # sometimes 
   def convert_type t
     case t.to_s
     when "bool"

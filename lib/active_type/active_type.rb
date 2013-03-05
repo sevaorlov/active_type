@@ -5,7 +5,7 @@ require 'active_type/postgresql_array_parser'
 class ActiveType
 
   class << self
-      attr_accessor :props
+      attr_accessor :props, :nested_types
   end
 
   def initialize hash=nil 
@@ -33,7 +33,9 @@ class ActiveType
     inst = self.new
     get_properties.each do |property|
       value = values[i]
-      if property.array?
+      if property.nested?
+        value = get_nested_class(property.type).load value 
+      elsif property.array?
 	value = parser.parse_pg_array(value).collect{ |item| property.type_cast(item) }	
       else
 	value = property.type_cast(value)
@@ -52,16 +54,18 @@ class ActiveType
     str = '('
     get_properties.each do |property|
       if inst.instance_variable_defined?(property.var_name)
-	v = inst.instance_variable_get(property.var_name)
-	if property.array? 	  
-	  raise "Property that is marked as array is not realy an array!" if !v.kind_of?(Array)
-	  v = v.collect{ |item| item.to_s }.to_s
-	  v[0]="\"{"
-	  v[v.length-1]="}\""
+	value = inst.instance_variable_get(property.var_name)
+	if property.nested?
+            value = get_nested_class(property.type).dump value
+	elsif property.array? 	  
+	  raise "Property that is marked as array is not realy an array!" if !value.kind_of?(Array)
+	  value = value.collect{ |item| item.to_s }.to_s
+	  value[0]="\"{"
+	  value[value.length-1]="}\""
 	else      
-	  v = PGconn.quote_ident(v.to_s.gsub(/,/,"\,"))
+	  value = PGconn.quote_ident(value.to_s.gsub(/,/,"\,"))
 	end
-	str << "#{v}"
+	str << "#{value}"
       end
       str << ","
     end
@@ -102,8 +106,20 @@ class ActiveType
     (@props ||= [])
   end
 
+  # returns parser for postgresql array parsing
   def self.parser
     @parser = MyPostgresParser.new if @parser.nil?
     @parser
+  end
+
+  # stores nested type class
+  def self.nested_types *types
+    (@nested_types ||= {})
+    types.each{ |item| @nested_types[item.name.downcase] = item }
+  end
+  
+  # returns nested type class by its name
+  def self.get_nested_class class_name
+    @nested_types[class_name.downcase]
   end
 end
