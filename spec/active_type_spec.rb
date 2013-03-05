@@ -33,6 +33,17 @@ describe "ActiveType" do
       DROP TABLE IF EXISTS model_with_arrays CASCADE;
       CREATE TYPE TypeWithArray AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
       CREATE TABLE model_with_arrays (id serial NOT NULL, name varchar, twa TypeWithArray, CONSTRAINT modelwitharray_pkey PRIMARY KEY (id ));
+
+      DROP TYPE IF EXISTS ChildChildType CASCADE;
+      DROP TYPE IF EXISTS ChildType1 CASCADE;
+      DROP TYPE IF EXISTS ChildType2 CASCADE;
+      DROP TYPE IF EXISTS ParentType CASCADE;
+      DROP TABLE IF EXISTS some_models CASCADE;      
+      CREATE TYPE ChildChildType AS (name varchar, some_string varchar);
+      CREATE TYPE ChildType1 AS (name varchar, some_date date, child_child ChildChildType);
+      CREATE TYPE ChildType2 AS (name varchar, some_boolean boolean);
+      CREATE TYPE ParentType AS (name varchar, some_datetime timestamp, child1 ChildType1, child2 ChildType2);
+      CREATE TABLE some_models (id serial NOT NULL, name varchar, parent_type ParentType, CONSTRAINT somemodel_pkey PRIMARY KEY (id));
     SQL
   end
 
@@ -177,7 +188,6 @@ describe "ActiveType" do
       serialize :twa, TypeWithArray
     end
 
-      #CREATE TYPE TypeWithArray AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
     it "should work" do
       str = "telephone"
       integer_array = [1, 2, 3, 4, 5]
@@ -211,14 +221,58 @@ describe "ActiveType" do
     end
 
   end
-  
+
   describe "with nested types" do
-
-    class TypeWithNestedTypes < ActiveType      
+    
+    class ChildChildType < ActiveType 
     end
-
-    it "should work" do 
+    
+    class ChildType1 < ActiveType
+      nested_types ChildChildType
     end
+    
+    class ChildType2 < ActiveType
+    end
+    
+    class ParentType < ActiveType
+      nested_types ChildType1, ChildType2
+    end
+    
+    class SomeModel < ActiveRecord::Base
+      attr_accessible :parent_type, :name
+      serialize :parent_type, ParentType
+    end
+    
+    it "should work" do
+      child_child_name = "childchildname"
+      some_string = "some string for child child"
+      some_model_name = "some model name"
+      parent_name = "parent_name"
+      child1_name = "child1 name"
+      child2_name = "child2 name"
+      some_boolean = true
+      some_date = Date.new(2012,1,2)
+      some_datetime = Time.new(2012, 12, 21, 12, 11, 9)
+      
+      child_child = ChildChildType.new(name: child_child_name, some_string: some_string)
+      child1 = ChildType1.new(name: child1_name, some_date: some_date, child_child: child_child)
+      child2 = ChildType2.new(name: child2_name, some_boolean: some_boolean)
+      parent = ParentType.new(name: parent_name, some_datetime: some_datetime, child1: child1, child2: child2)
+      model = SomeModel.create!(name: some_model_name, parent_type: parent)
+      model.reload
+      
+      model.name.should == some_model_name
+      
+      model.parent_type.name.should == parent_name
+      model.parent_type.some_datetime.should == some_datetime
+      model.parent_type.child1.name.should == child1_name
+      model.parent_type.child1.some_date.should == some_date
+      model.parent_type.child1.child_child.name.should == child_child_name
+      model.parent_type.child1.child_child.some_string.should == some_string
+      
+      model.child2.name.should == child2_name
+      model.child2.some_boolean.should == some_boolea
+    end    
   end
 
-end
+end 
