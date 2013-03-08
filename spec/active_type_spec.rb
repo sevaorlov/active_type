@@ -34,13 +34,16 @@ describe "ActiveType" do
       CREATE TYPE TypeWithArray AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
       CREATE TABLE model_with_arrays (id serial NOT NULL, name varchar, twa TypeWithArray, CONSTRAINT modelwitharray_pkey PRIMARY KEY (id ));
 
-      DROP TYPE IF EXISTS ChildChildType CASCADE;
+      --DROP TYPE IF EXISTS ChildChildChildType CASCADE;
+      --DROP TYPE IF EXISTS ChildChildType CASCADE;
       DROP TYPE IF EXISTS ChildType1 CASCADE;
       DROP TYPE IF EXISTS ChildType2 CASCADE;
       DROP TYPE IF EXISTS ParentType CASCADE;
       DROP TABLE IF EXISTS some_models CASCADE;      
-      CREATE TYPE ChildChildType AS (name varchar, some_string varchar);
-      CREATE TYPE ChildType1 AS (name varchar, some_date date, child_child ChildChildType);
+      --CREATE TYPE ChildChildChildType AS (name varchar);
+      --CREATE TYPE ChildChildType AS (name varchar, some_string varchar, ccc ChildChildChildType);
+      CREATE TYPE ChildType1 AS (name varchar, some_date date);
+      --, child_child ChildChildType);
       CREATE TYPE ChildType2 AS (name varchar, some_boolean boolean);
       CREATE TYPE ParentType AS (name varchar, some_datetime timestamp, child1 ChildType1, child2 ChildType2);
       CREATE TABLE some_models (id serial NOT NULL, name varchar, parent_type ParentType, CONSTRAINT somemodel_pkey PRIMARY KEY (id));
@@ -224,7 +227,11 @@ describe "ActiveType" do
 
   describe "with nested types" do
     
+    class ChildChildChildType < ActiveType 
+    end
+
     class ChildChildType < ActiveType 
+      nested_types ChildChildChildType
     end
     
     class ChildType1 < ActiveType
@@ -253,9 +260,11 @@ describe "ActiveType" do
       some_boolean = true
       some_date = Date.new(2012,1,2)
       some_datetime = Time.new(2012, 12, 21, 12, 11, 9)
+      ccc_name = "one one one"
       
-      child_child = ChildChildType.new(name: child_child_name, some_string: some_string)
-      child1 = ChildType1.new(name: child1_name, some_date: some_date, child_child: child_child)
+      ccc = ChildChildChildType.new(name: ccc_name)
+      child_child = ChildChildType.new(name: child_child_name, some_string: some_string, ccc: ccc)
+      child1 = ChildType1.new(name: child1_name, some_date: some_date)#, child_child: child_child)
       child2 = ChildType2.new(name: child2_name, some_boolean: some_boolean)
       parent = ParentType.new(name: parent_name, some_datetime: some_datetime, child1: child1, child2: child2)
       model = SomeModel.create!(name: some_model_name, parent_type: parent)
@@ -267,11 +276,12 @@ describe "ActiveType" do
       model.parent_type.some_datetime.should == some_datetime
       model.parent_type.child1.name.should == child1_name
       model.parent_type.child1.some_date.should == some_date
-      model.parent_type.child1.child_child.name.should == child_child_name
-      model.parent_type.child1.child_child.some_string.should == some_string
-      
-      model.child2.name.should == child2_name
-      model.child2.some_boolean.should == some_boolea
+      #model.parent_type.child1.child_child.name.should == child_child_name
+      #model.parent_type.child1.child_child.some_string.should == some_string
+      #model.parent_type.child1.child_child.ccc.name.should = ccc_name
+
+      model.parent_type.child2.name.should == child2_name
+      model.parent_type.child2.some_boolean.should == some_boolean    
     end    
   end
 

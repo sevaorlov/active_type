@@ -23,10 +23,10 @@ class ActiveType
     str[0]="{"
     str[str.length-1]="}"
     values = parser.parse_pg_array(str)
-    #p "load: #{values.to_s}"
+    #p "load: #{self.name}, #{values.to_s}"
 
     if values.length != get_properties.length
-      raise "ActiveType properties doesnt match db type properties! Expected: #{get_properties.length} Got: #{values.length}"
+      raise "ActiveType properties doesnt match db type properties! Expected: #{self.name} #{get_properties.length} Got: #{values.length}"
     end
     
     i = 0
@@ -51,12 +51,13 @@ class ActiveType
   def self.dump inst
     get_type_properties_from_db
 
-    str = '('
+    str = "("
     get_properties.each do |property|
       if inst.instance_variable_defined?(property.var_name)
 	value = inst.instance_variable_get(property.var_name)
 	if property.nested?
             value = get_nested_class(property.type).dump value
+	    value = value.gsub(/^\(/,"\"(").gsub(/\)$/,")\"")
 	elsif property.array? 	  
 	  raise "Property that is marked as array is not realy an array!" if !value.kind_of?(Array)
 	  value = value.collect{ |item| item.to_s }.to_s
@@ -65,11 +66,11 @@ class ActiveType
 	else      
 	  value = PGconn.quote_ident(value.to_s.gsub(/,/,"\,"))
 	end
-	str << "#{value}"
+	str << value
       end
       str << ","
     end
-    str.chop << ')'        
+    str.chop << ")"
   end
 
   private
@@ -78,7 +79,7 @@ class ActiveType
     
     if get_properties.empty?
 
-      table = self.name.gsub(/[^0-9A-Za-z]/, '').downcase
+      table = PGconn.escape_string(self.name.downcase)  
       p "get type properties from table: #{table}"
 
       result = ActiveRecord::Base.connection.execute <<-SQL
