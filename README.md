@@ -31,7 +31,13 @@ Or install it yourself as:
     serialize :your_type_name, YourTypeClass
 
 in your model.
-Write usage instructions here
+
+Gem also supports arays and one level nested types.
+
+Limitations:
+1) Doesnt support commas in arrays
+2) Doesnt support multiple level nested types
+3) Maybe doesnt support bytea type
 
 ## Contributing
 
