@@ -4,10 +4,6 @@ require 'active_type/postgresql_array_parser'
 
 class ActiveType
 
-  class << self
-      attr_accessor :props, :nested_types
-  end
-
   def initialize hash=nil 
     if hash
       hash.each do |key, value|
