@@ -75,13 +75,13 @@ class ActiveType
     
     if get_properties.empty?
 
-      table = PGconn.escape_string(self.name.downcase)  
-      p "get type properties from table: #{table}"
+      type_name = PGconn.escape_string(self.name.underscore)  
+      p "get type properties from type: #{type_name}"
 
       result = ActiveRecord::Base.connection.execute <<-SQL
 	SELECT a.attname, t.typname
         FROM pg_class c JOIN pg_attribute a ON c.oid = a.attrelid JOIN pg_type t ON a.atttypid = t.oid
-        WHERE c.relname = '#{table}';
+        WHERE c.relname = '#{type_name}';
       SQL
   
       p "got #{result.num_tuples} results"
@@ -108,15 +108,9 @@ class ActiveType
     @parser = MyPostgresParser.new if @parser.nil?
     @parser
   end
-
-  # stores nested type class
-  def self.nested_types *types
-    (@nested_types ||= {})
-    types.each{ |item| @nested_types[item.name.downcase] = item }
-  end
   
   # returns nested type class by its name
-  def self.get_nested_class class_name
-    @nested_types[class_name.downcase]
+  def self.get_nested_class type_name
+    type_name.camelize.constantize
   end
 end

@@ -14,39 +14,40 @@ describe "ActiveType" do
   before(:all) do
     ActiveRecord::Base.establish_connection(connection_hash)
     ActiveRecord::Base.connection.execute <<-SQL
-      DROP TYPE IF EXISTS Address CASCADE;
+      DROP TYPE IF EXISTS address CASCADE;
       DROP TABLE IF EXISTS people CASCADE;
-      CREATE TYPE Address AS (city varchar, street varchar, zip varchar);
-      CREATE TABLE people (id serial NOT NULL, name varchar, address Address, CONSTRAINT people_pkey PRIMARY KEY (id ));
+      CREATE TYPE address AS (city varchar, street varchar, zip varchar);
+      CREATE TABLE people (id serial NOT NULL, name varchar, address address, CONSTRAINT people_pkey PRIMARY KEY (id ));
 
-      DROP TYPE IF EXISTS ManyDataTypesType CASCADE;
+      DROP TYPE IF EXISTS many_data_types_type CASCADE;
       DROP TABLE IF EXISTS many_types_models CASCADE;
-      CREATE TYPE ManyDataTypesType AS (binary_type bytea, boolean_type boolean, date_type date, datetime_type timestamp, decimal_type decimal, float_type float, integer_type integer, string_type varchar, text_type text, time_type time, timestamp_type timestamp);
-      CREATE TABLE many_types_models (id serial NOT NULL, name varchar, mdtt ManyDataTypesType, CONSTRAINT manytypesmodel_pkey PRIMARY KEY (id ));
+      CREATE TYPE many_data_types_type AS (binary_type bytea, boolean_type boolean, date_type date, datetime_type timestamp, decimal_type decimal, float_type float, integer_type integer, string_type varchar, text_type text, time_type time, timestamp_type timestamp);
+      CREATE TABLE many_types_models (id serial NOT NULL, name varchar, mdtt many_data_types_type, CONSTRAINT manytypesmodel_pkey PRIMARY KEY (id ));
       
-      DROP TYPE IF EXISTS Project CASCADE;
+      DROP TYPE IF EXISTS project CASCADE;
       DROP TABLE IF EXISTS companies CASCADE;
-      CREATE TYPE Project AS (name varchar, started timestamp, new_project boolean, employees_number integer, some_time time, something bytea, project_type varchar);
-      CREATE TABLE companies (id serial NOT NULL, name varchar, project Project, CONSTRAINT company_pkey PRIMARY KEY (id ));
+      CREATE TYPE project AS (name varchar, started timestamp, new_project boolean, employees_number integer, some_time time, something bytea, project_type varchar);
+      CREATE TABLE companies (id serial NOT NULL, name varchar, project project, CONSTRAINT company_pkey PRIMARY KEY (id ));
       
-      DROP TYPE IF EXISTS TypeWithArray CASCADE;
+      DROP TYPE IF EXISTS type_with_array CASCADE;
       DROP TABLE IF EXISTS model_with_arrays CASCADE;
-      CREATE TYPE TypeWithArray AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
-      CREATE TABLE model_with_arrays (id serial NOT NULL, name varchar, twa TypeWithArray, CONSTRAINT modelwitharray_pkey PRIMARY KEY (id ));
+      CREATE TYPE type_with_array AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
+      CREATE TABLE model_with_arrays (id serial NOT NULL, name varchar, twa type_with_array, CONSTRAINT modelwitharray_pkey PRIMARY KEY (id ));
 
-      --DROP TYPE IF EXISTS ChildChildChildType CASCADE;
-      --DROP TYPE IF EXISTS ChildChildType CASCADE;
-      DROP TYPE IF EXISTS ChildType1 CASCADE;
-      DROP TYPE IF EXISTS ChildType2 CASCADE;
-      DROP TYPE IF EXISTS ParentType CASCADE;
+      --DROP TYPE IF EXISTS child_child_child_type CASCADE;
+      --DROP TYPE IF EXISTS child_child_type CASCADE;
+      DROP TYPE IF EXISTS child_type1 CASCADE;
+      DROP TYPE IF EXISTS child_type2 CASCADE;
+      DROP TYPE IF EXISTS parent_type CASCADE;
       DROP TABLE IF EXISTS some_models CASCADE;      
-      --CREATE TYPE ChildChildChildType AS (name varchar);
-      --CREATE TYPE ChildChildType AS (name varchar, some_string varchar, ccc ChildChildChildType);
-      CREATE TYPE ChildType1 AS (name varchar, some_date date);
-      --, child_child ChildChildType);
-      CREATE TYPE ChildType2 AS (name varchar, some_boolean boolean);
-      CREATE TYPE ParentType AS (name varchar, some_datetime timestamp, child1 ChildType1, child2 ChildType2);
-      CREATE TABLE some_models (id serial NOT NULL, name varchar, parent_type ParentType, CONSTRAINT somemodel_pkey PRIMARY KEY (id));
+      --CREATE TYPE child_child_child_type AS (name varchar);
+      --CREATE TYPE child_child_type AS (name varchar, some_string varchar);
+      --, ccc child_child_child_type);
+      CREATE TYPE child_type1 AS (name varchar, some_date date);
+      --, child_child child_child_child_type);
+      CREATE TYPE child_type2 AS (name varchar, some_boolean boolean);
+      CREATE TYPE parent_type AS (name varchar, some_datetime timestamp, child1 child_type1, child2 child_type2);
+      CREATE TABLE some_models (id serial NOT NULL, name varchar, parent_type parent_type, CONSTRAINT somemodel_pkey PRIMARY KEY (id));
     SQL
   end
 
@@ -231,18 +232,15 @@ describe "ActiveType" do
     end
 
     class ChildChildType < ActiveType 
-      nested_types ChildChildChildType
     end
     
     class ChildType1 < ActiveType
-      nested_types ChildChildType
     end
     
     class ChildType2 < ActiveType
     end
     
     class ParentType < ActiveType
-      nested_types ChildType1, ChildType2
     end
     
     class SomeModel < ActiveRecord::Base
@@ -263,7 +261,7 @@ describe "ActiveType" do
       ccc_name = "one one one"
       
       ccc = ChildChildChildType.new(name: ccc_name)
-      child_child = ChildChildType.new(name: child_child_name, some_string: some_string, ccc: ccc)
+      child_child = ChildChildType.new(name: child_child_name, some_string: some_string)#, ccc: ccc)
       child1 = ChildType1.new(name: child1_name, some_date: some_date)#, child_child: child_child)
       child2 = ChildType2.new(name: child2_name, some_boolean: some_boolean)
       parent = ParentType.new(name: parent_name, some_datetime: some_datetime, child1: child1, child2: child2)
