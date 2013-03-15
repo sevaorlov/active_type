@@ -100,13 +100,12 @@ class ActiveType
 
   # returns type object properties
   def self.get_properties
-    (@props ||= [])
+    @props ||= []
   end
 
   # returns parser for postgresql array parsing
   def self.parser
-    @parser = MyPostgresParser.new if @parser.nil?
-    @parser
+    @parser ||= MyPostgresParser.new
   end
   
   # returns nested type class by its name
