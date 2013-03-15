@@ -146,18 +146,6 @@ describe "ActiveType" do
       many_model = ManyTypesModel.create!(name: 'some random name', mdtt: mdtt)
       many_model.reload
       
-      many_model.mdtt.binary_type.class.should == binary_var.class
-      many_model.mdtt.boolean_type.class.should == boolean_var.class
-      many_model.mdtt.date_type.class.should == date_var.class
-      many_model.mdtt.datetime_type.class.should == datetime_var.class
-      many_model.mdtt.decimal_type.class.should == decimal_var.class
-      many_model.mdtt.float_type.class.should == float_var.class
-      many_model.mdtt.integer_type.class.should == integer_var.class
-      many_model.mdtt.string_type.class.should == string_var.class
-      many_model.mdtt.text_type.class.should == text_var.class
-      many_model.mdtt.time_type.class.should == time_var.class
-      many_model.mdtt.timestamp_type.class.should == timestamp_var.class
-         
       #ActiveRecord::Base.connection.unescape_bytea(many_model.mdtt.binary_type.gsub(/\\\\/,"\\")).should == binary_var
       #many_model.mdtt.binary_type.should == binary_var
       many_model.mdtt.boolean_type.should == boolean_var
