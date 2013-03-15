@@ -194,8 +194,8 @@ describe "ActiveType" do
       time_array = [Time.new(2000, 01, 01, 12, 11, 5),  Time.new(2000, 01, 01, 12, 11, 5), Time.new(2000, 01, 01, 12, 11, 5)]
       timestamp_array = [Time.new(1999, 4, 14), Time.new(1999, 4, 14), Time.new(1999, 4, 14)]
       twa = TypeWithArray.new(str: str, integer_array: integer_array, boolean_array: boolean_array,date_array: date_array, 
-	binary_array: binary_array, datetime_array: datetime_array, decimal_array: decimal_array, float_array: float_array,
-	string_array: string_array, text_array: text_array, time_array: time_array, timestamp_array: timestamp_array)
+  binary_array: binary_array, datetime_array: datetime_array, decimal_array: decimal_array, float_array: float_array,
+  string_array: string_array, text_array: text_array, time_array: time_array, timestamp_array: timestamp_array)
       model = ModelWithArray.create!(name: 'wonderfull name', twa: twa)
       model.reload
       model.twa.str.should == str
