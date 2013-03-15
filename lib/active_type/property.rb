@@ -18,11 +18,7 @@ class Property
     #p "cast #{value} to #{@type}"
     column.type_cast value
   end
-
-  def var_name
-    "@#{@name}"
-  end
-
+  
   def array?
     @array
   end

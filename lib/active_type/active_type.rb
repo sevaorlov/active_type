@@ -38,7 +38,7 @@ class ActiveType
         value = property.type_cast(value)
       end
 
-      inst.instance_variable_set(property.var_name, value)
+      inst.send("#{property.name}=", value)
       i += 1
     end
     inst
@@ -50,8 +50,8 @@ class ActiveType
 
     str = "("
     get_properties.each do |property|
-      if inst.instance_variable_defined?(property.var_name)
-        value = inst.instance_variable_get(property.var_name)
+      value = inst.send(property.name)
+      if !value.nil?
         if property.nested?
           value = get_nested_class(property.type).dump value
           value = value.gsub(/^\(/,"\"(").gsub(/\)$/,")\"")
