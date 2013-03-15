@@ -26,9 +26,8 @@ class ActiveType
       raise "ActiveType properties doesnt match db type properties! Expected: #{self.name} #{get_properties.length} Got: #{values.length}"
     end
 
-    i = 0
     inst = self.new
-    get_properties.each do |property|
+    get_properties.each_with_index.each do |property, i|
       value = values[i]
       if property.nested?
         value = get_nested_class(property.type).load value 
@@ -37,9 +36,7 @@ class ActiveType
       else
         value = property.type_cast(value)
       end
-
       inst.send("#{property.name}=", value)
-      i += 1
     end
     inst
   end
