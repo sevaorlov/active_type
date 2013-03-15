@@ -17,9 +17,7 @@ class ActiveType
   def self.load str
     get_type_properties_from_db
 
-    str[0]="{"
-    str[-1]="}"
-    values = parser.parse_pg_array(str)
+    values = parser.parse_pg_array(str.gsub(/^\(/,"{").gsub(/\)$/,"}"))
     #p "load: #{self.name}, #{values.to_s}"
 
     if values.length != get_properties.length
