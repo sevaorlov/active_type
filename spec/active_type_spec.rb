@@ -8,7 +8,7 @@ describe "ActiveType" do
     database: 'test-active-type',
     host: 'localhost',
     username: 'postgres',
-    password: 'postgres',        
+    password: 'postgres',
   } }
 
   before(:all) do
@@ -23,12 +23,12 @@ describe "ActiveType" do
       DROP TABLE IF EXISTS many_types_models CASCADE;
       CREATE TYPE many_data_types_type AS (binary_type bytea, boolean_type boolean, date_type date, datetime_type timestamp, decimal_type decimal, float_type float, integer_type integer, string_type varchar, text_type text, time_type time, timestamp_type timestamp);
       CREATE TABLE many_types_models (id serial NOT NULL, name varchar, mdtt many_data_types_type, CONSTRAINT manytypesmodel_pkey PRIMARY KEY (id ));
-      
+
       DROP TYPE IF EXISTS project CASCADE;
       DROP TABLE IF EXISTS companies CASCADE;
       CREATE TYPE project AS (name varchar, started timestamp, new_project boolean, employees_number integer, some_time time, something bytea, project_type varchar);
       CREATE TABLE companies (id serial NOT NULL, name varchar, project project, CONSTRAINT company_pkey PRIMARY KEY (id ));
-      
+
       DROP TYPE IF EXISTS type_with_array CASCADE;
       DROP TABLE IF EXISTS model_with_arrays CASCADE;
       CREATE TYPE type_with_array AS (str varchar, binary_array bytea[], boolean_array boolean[], date_array date[], datetime_array timestamp[], decimal_array decimal[], float_array float[], integer_array integer[], string_array varchar[], text_array text[], time_array time[], timestamp_array timestamp[]);
@@ -39,7 +39,7 @@ describe "ActiveType" do
       DROP TYPE IF EXISTS child_type1 CASCADE;
       DROP TYPE IF EXISTS child_type2 CASCADE;
       DROP TYPE IF EXISTS parent_type CASCADE;
-      DROP TABLE IF EXISTS some_models CASCADE;      
+      DROP TABLE IF EXISTS some_models CASCADE;
       --CREATE TYPE child_child_child_type AS (name varchar);
       --CREATE TYPE child_child_type AS (name varchar, some_string varchar);
       --, ccc child_child_child_type);
@@ -54,7 +54,7 @@ describe "ActiveType" do
   describe "with db" do 
     class Address < ActiveType
     end
-        
+
     class Person < ActiveRecord::Base
        attr_accessible :name, :address
        serialize :address, Address
@@ -68,13 +68,13 @@ describe "ActiveType" do
   end
 
   describe "serialization" do
-  
+
     class SomeType < ActiveType
       property :pr1
       property :pr2
       property :pr3
     end
-    
+
     class SomeAnotherType < ActiveType
       property :one
       property :two
@@ -86,28 +86,28 @@ describe "ActiveType" do
       property :two
       property :three
     end
-    
-    it "serialize a type" do             
+
+    it "serialize a type" do
       type = SomeType.new
       type.pr1 = 'pr1_text'
       type.pr2 = 'pr2_text'
       type.pr3 = 'pr3_text'
       SomeType.dump(type).should eql('("pr1_text","pr2_text","pr3_text")')
     end
-          
-    it "deserialize a type" do         
+
+    it "deserialize a type" do
       type = SomeAnotherType.load("(moskow,mohovaya,28)")
-      type.one.should eql("moskow") 
+      type.one.should eql("moskow")
       type.two.should eql("mohovaya")
       type.three.should eql("28")
     end
-          
-    it "raise error when properties not equal on deserialization" do          
+
+    it "raise error when properties not equal on deserialization" do
       expect{SomeThirdType.load("(moskow,mohovaya,28,sometext)")}.to raise_error
     end
-  end 
+  end
 
-  describe "with types" do 
+  describe "with types" do
 
     class ManyDataTypesType < ActiveType
     end
@@ -116,7 +116,7 @@ describe "ActiveType" do
       attr_accessible :name, :mdtt
       serialize :mdtt, ManyDataTypesType
     end
-    
+
     class Project < ActiveType
     end
 
@@ -124,7 +124,7 @@ describe "ActiveType" do
       attr_accessible :name, :project
       serialize :project, Project
     end
-            
+
     it "should work" do
       binary_var = "some string for binary type"
       boolean_var = true
@@ -137,15 +137,15 @@ describe "ActiveType" do
       text_var = "some random, very long text"
       # It is always 01.01.2000, it is hard code in class Column
       time_var = Time.new(2000, 01, 01, 12, 11, 5)
-      timestamp_var = Time.new(1999, 4, 14)    
+      timestamp_var = Time.new(1999, 4, 14)
 
-      mdtt = ManyDataTypesType.new(binary_type: binary_var, boolean_type: boolean_var, 
-          date_type: date_var, datetime_type: datetime_var, decimal_type: decimal_var, 
-          float_type: float_var, integer_type: integer_var, string_type: string_var, 
+      mdtt = ManyDataTypesType.new(binary_type: binary_var, boolean_type: boolean_var,
+          date_type: date_var, datetime_type: datetime_var, decimal_type: decimal_var,
+          float_type: float_var, integer_type: integer_var, string_type: string_var,
           text_type: text_var, time_type: time_var, timestamp_type: timestamp_var)
       many_model = ManyTypesModel.create!(name: 'some random name', mdtt: mdtt)
       many_model.reload
-      
+ 
       #ActiveRecord::Base.connection.unescape_bytea(many_model.mdtt.binary_type.gsub(/\\\\/,"\\")).should == binary_var
       #many_model.mdtt.binary_type.should == binary_var
       many_model.mdtt.boolean_type.should == boolean_var
@@ -159,20 +159,20 @@ describe "ActiveType" do
       many_model.mdtt.time_type.should == time_var
       many_model.mdtt.timestamp_type.should == timestamp_var
     end
-    
+
     it "should work even if they are empty" do
       project_name = "ONETWO"
       project_type = "startup"
       expect { Company.create!(name: 'Cool Company', project: Project.new( name:  project_name, project_type: project_type))}.to_not raise_error
       company = Company.last
-      company.project.name.should == project_name    
-      company.project.project_type == project_type   
+      company.project.name.should == project_name
+      company.project.project_type == project_type
     end
-  end 
-  
-  describe "with arrays" do 
-  
-    class TypeWithArray < ActiveType  
+  end
+
+  describe "with arrays" do
+
+    class TypeWithArray < ActiveType
     end
 
     class ModelWithArray < ActiveRecord::Base
@@ -215,27 +215,27 @@ describe "ActiveType" do
   end
 
   describe "with nested types" do
-    
+
     class ChildChildChildType < ActiveType 
     end
 
     class ChildChildType < ActiveType 
     end
-    
+
     class ChildType1 < ActiveType
     end
-    
+
     class ChildType2 < ActiveType
     end
-    
+
     class ParentType < ActiveType
     end
-    
+
     class SomeModel < ActiveRecord::Base
       attr_accessible :parent_type, :name
       serialize :parent_type, ParentType
     end
-    
+
     it "should work" do
       child_child_name = "childchildname"
       some_string = "some string for child child"
@@ -247,7 +247,7 @@ describe "ActiveType" do
       some_date = Date.new(2012,1,2)
       some_datetime = Time.new(2012, 12, 21, 12, 11, 9)
       ccc_name = "one one one"
-      
+
       ccc = ChildChildChildType.new(name: ccc_name)
       child_child = ChildChildType.new(name: child_child_name, some_string: some_string)#, ccc: ccc)
       child1 = ChildType1.new(name: child1_name, some_date: some_date)#, child_child: child_child)
@@ -255,9 +255,9 @@ describe "ActiveType" do
       parent = ParentType.new(name: parent_name, some_datetime: some_datetime, child1: child1, child2: child2)
       model = SomeModel.create!(name: some_model_name, parent_type: parent)
       model.reload
-      
+
       model.name.should == some_model_name
-      
+
       model.parent_type.name.should == parent_name
       model.parent_type.some_datetime.should == some_datetime
       model.parent_type.child1.name.should == child1_name
@@ -267,8 +267,8 @@ describe "ActiveType" do
       #model.parent_type.child1.child_child.ccc.name.should = ccc_name
 
       model.parent_type.child2.name.should == child2_name
-      model.parent_type.child2.some_boolean.should == some_boolean    
-    end    
+      model.parent_type.child2.some_boolean.should == some_boolean
+    end
   end
 
-end 
+end

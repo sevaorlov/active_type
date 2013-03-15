@@ -2,7 +2,7 @@ require 'active_record'
 
 class Property
   include ActiveRecord::ConnectionAdapters 
- 
+
   attr_accessor :name, :type
 
   def initialize name, type
@@ -16,12 +16,12 @@ class Property
   # cast value to an appropriate instance
   def type_cast value
     #p "cast #{value} to #{@type}"
-    column.type_cast value       
+    column.type_cast value
   end
-    
+
   def var_name
     "@#{@name}"
-  end  
+  end
 
   def array?
     @array
@@ -37,7 +37,7 @@ class Property
 
   private
   def column
-    @column ||= PostgreSQLColumn.new(@name, nil, @type)    
+    @column ||= PostgreSQLColumn.new(@name, nil, @type)
   end
 
   def convert_type t
@@ -47,5 +47,5 @@ class Property
     end
     return t
   end
-  
+
 end

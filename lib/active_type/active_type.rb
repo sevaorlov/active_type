@@ -4,7 +4,7 @@ require 'active_type/postgresql_array_parser'
 
 class ActiveType
 
-  def initialize hash=nil 
+  def initialize hash=nil
     if hash
       hash.each do |key, value|
         instance_variable_set("@#{key}", value)
@@ -13,7 +13,7 @@ class ActiveType
   end
 
   # deserialize type object
-  def self.load str    
+  def self.load str
     get_type_properties_from_db
 
     str[0]="{"
@@ -24,7 +24,7 @@ class ActiveType
     if values.length != get_properties.length
       raise "ActiveType properties doesnt match db type properties! Expected: #{self.name} #{get_properties.length} Got: #{values.length}"
     end
-    
+
     i = 0
     inst = self.new
     get_properties.each do |property|
@@ -36,7 +36,7 @@ class ActiveType
       else
   value = property.type_cast(value)
       end
-      
+
       inst.instance_variable_set(property.var_name, value)
       i += 1
     end
@@ -54,12 +54,12 @@ class ActiveType
   if property.nested?
             value = get_nested_class(property.type).dump value
       value = value.gsub(/^\(/,"\"(").gsub(/\)$/,")\"")
-  elsif property.array?     
+  elsif property.array?
     raise "Property that is marked as array is not realy an array!" if !value.kind_of?(Array)
     value = value.collect{ |item| item.to_s }.to_s
     value[0]="\"{"
     value[-1]="}\""
-  else      
+  else
     value = PGconn.quote_ident(value.to_s.gsub(/,/,"\,"))
   end
   str << value
@@ -72,10 +72,10 @@ class ActiveType
   private
   # gets type properties from db
   def self.get_type_properties_from_db
-    
+
     if get_properties.empty?
 
-      type_name = PGconn.escape_string(self.name.underscore)  
+      type_name = PGconn.escape_string(self.name.underscore)
       p "get type properties from type: #{type_name}"
 
       result = ActiveRecord::Base.connection.execute <<-SQL
@@ -83,7 +83,7 @@ class ActiveType
         FROM pg_class c JOIN pg_attribute a ON c.oid = a.attrelid JOIN pg_type t ON a.atttypid = t.oid
         WHERE c.relname = '#{type_name}';
       SQL
-  
+
       p "got #{result.num_tuples} results"
       result.each do |field|
         property field["attname"], field["typname"]
@@ -96,7 +96,7 @@ class ActiveType
   def self.property(name, type=:string)
     class_eval { attr_accessor name}
     (@props ||=  []) << Property.new(name, type)
-  end  
+  end
 
   # returns type object properties
   def self.get_properties
@@ -107,7 +107,7 @@ class ActiveType
   def self.parser
     @parser ||= MyPostgresParser.new
   end
-  
+
   # returns nested type class by its name
   def self.get_nested_class type_name
     type_name.camelize.constantize
