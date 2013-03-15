@@ -17,7 +17,7 @@ class ActiveType
     get_type_properties_from_db
 
     str[0]="{"
-    str[str.length-1]="}"
+    str[-1]="}"
     values = parser.parse_pg_array(str)
     #p "load: #{self.name}, #{values.to_s}"
 
@@ -58,7 +58,7 @@ class ActiveType
 	  raise "Property that is marked as array is not realy an array!" if !value.kind_of?(Array)
 	  value = value.collect{ |item| item.to_s }.to_s
 	  value[0]="\"{"
-	  value[value.length-1]="}\""
+	  value[-1]="}\""
 	else      
 	  value = PGconn.quote_ident(value.to_s.gsub(/,/,"\,"))
 	end
