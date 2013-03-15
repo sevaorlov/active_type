@@ -37,8 +37,7 @@ class Property
 
   private
   def column
-    @column = PostgreSQLColumn.new(@name, nil, @type) if @column.nil?
-    @column
+    @column ||= PostgreSQLColumn.new(@name, nil, @type)    
   end
 
   def convert_type t
