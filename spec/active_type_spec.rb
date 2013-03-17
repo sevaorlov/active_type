@@ -8,7 +8,7 @@ describe 'ActiveType' do
      database: 'test-active-type',
      host: 'localhost',
      username: 'postgres',
-     password: 'qwe324012'
+     password: 'postgres'
     }
   end
 
