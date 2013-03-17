@@ -57,7 +57,7 @@ class ActiveType
             raise 'Property that is marked as array is not realy an array!'
           end
           value = value.collect { |item| item.to_s }.to_s
-          value[0] = '{'
+          value[0] = '"{'
           value[-1] = '}"'
         else
           value = PGconn.quote_ident(value.to_s.gsub(/,/, '\,'))
