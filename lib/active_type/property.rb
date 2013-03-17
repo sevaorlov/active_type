@@ -1,24 +1,24 @@
 require 'active_record'
 
 class Property
-  include ActiveRecord::ConnectionAdapters 
+  include ActiveRecord::ConnectionAdapters
 
   attr_accessor :name, :type
 
-  def initialize name, type
+  def initialize(name, type)
     @name = name
-    @array = (type.to_s[0] == "_")
+    @array = (type.to_s[0] == '_')
     type[0] = '' if @array
     @type = convert_type type
     #p "new property #{@name}, #{@type}, array=#{@array}"
   end
 
   # cast value to an appropriate instance
-  def type_cast value
+  def type_cast(value)
     #p "cast #{value} to #{@type}"
     column.type_cast value
   end
-  
+
   def array?
     @array
   end
@@ -36,10 +36,10 @@ class Property
     @column ||= PostgreSQLColumn.new(@name, nil, @type)
   end
 
-  def convert_type t
+  def convert_type(t)
     case t.to_s
-    when "bool"
-      return "boolean"
+    when 'bool'
+      return 'boolean'
     end
     return t
   end

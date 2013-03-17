@@ -1,4 +1,4 @@
-require "pg_array_parser"
+require 'pg_array_parser'
 
 class MyPostgresParser
   include PgArrayParser

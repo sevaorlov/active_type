@@ -1,11 +1,10 @@
 require 'active_record'
-:A
 require 'active_type/property'
 require 'active_type/postgresql_array_parser'
 
 class ActiveType
 
-  def initialize hash=nil
+  def initialize(hash=nil)
     if hash
       hash.each do |key, value|
         instance_variable_set("@#{key}", value)
@@ -17,20 +16,23 @@ class ActiveType
   def self.load str
     get_type_properties_from_db
 
-    values = parser.parse_pg_array(str.gsub(/^\(/,"{").gsub(/\)$/,"}"))
+    values = parser.parse_pg_array(str.gsub(/^\(/, '{').gsub(/\)$/, '}'))
     #p "load: #{self.name}, #{values.to_s}"
 
     if values.length != get_properties.length
-      raise "ActiveType properties doesnt match db type properties! Expected: #{self.name} #{get_properties.length} Got: #{values.length}"
+      raise "ActiveType properties
+      doesnt match db type properties! Expected: #{self.name}
+      #{get_properties.length} Got: #{values.length}"
     end
 
     inst = self.new
     get_properties.each_with_index.each do |property, i|
       value = values[i]
       if property.nested?
-        value = get_nested_class(property.type).load value 
+        value = get_nested_class(property.type).load value
       elsif property.array?
-        value = parser.parse_pg_array(value).collect{ |item| property.type_cast(item) } 
+        value = parser.parse_pg_array(value).
+          collect { |item| property.type_cast(item) }
       else
         value = property.type_cast(value)
       end
@@ -43,26 +45,28 @@ class ActiveType
   def self.dump inst
     get_type_properties_from_db
 
-    str = "("
+    str = '('
     get_properties.each do |property|
       value = inst.send(property.name)
       if !value.nil?
         if property.nested?
           value = get_nested_class(property.type).dump value
-          value = value.gsub(/^\(/,"\"(").gsub(/\)$/,")\"")
+          value = value.gsub(/^\(/, '"(').gsub(/\)$/, ')"')
         elsif property.array?
-          raise "Property that is marked as array is not realy an array!" if !value.kind_of?(Array)
-          value = value.collect{ |item| item.to_s }.to_s
-          value[0]="\"{"
-          value[-1]="}\""
+          if !value.kind_of?(Array)
+            raise 'Property that is marked as array is not realy an array!'
+          end
+          value = value.collect { |item| item.to_s }.to_s
+          value[0] = '{'
+          value[-1] = '}"'
         else
-          value = PGconn.quote_ident(value.to_s.gsub(/,/,"\,"))
+          value = PGconn.quote_ident(value.to_s.gsub(/,/, '\,'))
         end
         str << value
       end
-      str << ","
+      str << ','
     end
-    str.chop << ")"
+    str.chop << ')'
   end
 
   private
@@ -75,14 +79,15 @@ class ActiveType
       p "get type properties from type: #{type_name}"
 
       result = ActiveRecord::Base.connection.execute <<-SQL
-        SELECT a.attname, t.typname
-        FROM pg_class c JOIN pg_attribute a ON c.oid = a.attrelid JOIN pg_type t ON a.atttypid = t.oid
-        WHERE c.relname = '#{type_name}';
+      SELECT a.attname,
+      t.typname FROM pg_class c JOIN pg_attribute a
+      ON c.oid = a.attrelid JOIN
+      pg_type t ON a.atttypid = t.oid WHERE c.relname = '#{type_name}';
       SQL
 
       p "got #{result.num_tuples} results"
       result.each do |field|
-        property field["attname"], field["typname"]
+        property field['attname'], field['typname']
         #p " #{field["attname"]} : #{field["typname"]}"
       end
     end
@@ -90,7 +95,7 @@ class ActiveType
 
   # adds new property with its type
   def self.property(name, type=:string)
-    class_eval { attr_accessor name}
+    class_eval { attr_accessor name }
     (@props ||=  []) << Property.new(name, type)
   end
 
