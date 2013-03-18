@@ -27,16 +27,7 @@ class ActiveType
 
     inst = self.new
     get_properties.each_with_index.each do |property, i|
-      value = values[i]
-      if property.nested?
-        value = get_nested_class(property.type).load value
-      elsif property.array?
-        value = parser.parse_pg_array(value).
-          collect { |item| property.type_cast(item) }
-      else
-        value = property.type_cast(value)
-      end
-      inst.send("#{property.name}=", value)
+      inst.send("#{property.name}=", property.deserialize(values[i]))
     end
     inst
   end
@@ -48,22 +39,7 @@ class ActiveType
     str = '('
     get_properties.each do |property|
       value = inst.send(property.name)
-      if !value.nil?
-        if property.nested?
-          value = get_nested_class(property.type).dump value
-          value = value.gsub(/^\(/, '"(').gsub(/\)$/, ')"')
-        elsif property.array?
-          if !value.kind_of?(Array)
-            raise 'Property that is marked as array is not realy an array!'
-          end
-          value = value.collect { |item| item.to_s }.to_s
-          value[0] = '"{'
-          value[-1] = '}"'
-        else
-          value = PGconn.quote_ident(value.to_s.gsub(/,/, '\,'))
-        end
-        str << value
-      end
+      str << property.serialize(value)
       str << ','
     end
     str.chop << ')'
