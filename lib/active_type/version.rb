@@ -1,3 +1,3 @@
-module ActiveType
+class ActiveType
   VERSION = '0.0.3'
 end
