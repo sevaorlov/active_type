@@ -14,7 +14,6 @@ class ActiveType
 
   # deserialize type object
   def self.load str
-    get_type_properties_from_db
 
     values = parser.parse_pg_array(str.gsub(/^\(/, '{').gsub(/\)$/, '}'))
     #p "load: #{self.name}, #{values.to_s}"
@@ -34,7 +33,6 @@ class ActiveType
 
   # serialize type object
   def self.dump inst
-    get_type_properties_from_db
 
     str = '('
     get_properties.each do |property|
@@ -49,23 +47,20 @@ class ActiveType
   # gets type properties from db
   def self.get_type_properties_from_db
 
-    if get_properties.empty?
+    type_name = PGconn.escape_string(self.name.underscore)
+    p "get type properties from type: #{type_name}"
 
-      type_name = PGconn.escape_string(self.name.underscore)
-      p "get type properties from type: #{type_name}"
+    result = ActiveRecord::Base.connection.execute <<-SQL
+    SELECT a.attname,
+    t.typname FROM pg_class c JOIN pg_attribute a
+    ON c.oid = a.attrelid JOIN
+    pg_type t ON a.atttypid = t.oid WHERE c.relname = '#{type_name}';
+    SQL
 
-      result = ActiveRecord::Base.connection.execute <<-SQL
-      SELECT a.attname,
-      t.typname FROM pg_class c JOIN pg_attribute a
-      ON c.oid = a.attrelid JOIN
-      pg_type t ON a.atttypid = t.oid WHERE c.relname = '#{type_name}';
-      SQL
-
-      p "got #{result.num_tuples} results"
-      result.each do |field|
-        property field['attname'], field['typname']
-        #p " #{field["attname"]} : #{field["typname"]}"
-      end
+    p "got #{result.num_tuples} results"
+    result.each do |field|
+      property field['attname'], field['typname']
+      #p " #{field["attname"]} : #{field["typname"]}"
     end
   end
 
@@ -77,6 +72,7 @@ class ActiveType
 
   # returns type object properties
   def self.get_properties
+    get_type_properties_from_db if @props.nil?
     @props ||= []
   end
 
