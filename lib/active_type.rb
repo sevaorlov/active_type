@@ -38,7 +38,7 @@ class ActiveType
     str << get_properties.map do |property|
       value = inst.send(property.name)
       property.serialize(value)
-    end.join(",")
+    end.join(',')
     str << ')'
   end
 
