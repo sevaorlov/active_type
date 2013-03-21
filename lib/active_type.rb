@@ -35,12 +35,11 @@ class ActiveType
   def self.dump inst
 
     str = '('
-    get_properties.each do |property|
+    str << get_properties.map do |property|
       value = inst.send(property.name)
-      str << property.serialize(value)
-      str << ','
-    end
-    str.chop << ')'
+      property.serialize(value)
+    end.join(",")
+    str << ')'
   end
 
   private
