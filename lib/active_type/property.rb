@@ -14,7 +14,7 @@ class Property
     #p "new property #{@name}, #{@type}, array=#{@array}"
   end
 
-  def serialize value
+  def serialize(value)
     res = ''
     if !value.nil?
       if nested?
@@ -22,19 +22,19 @@ class Property
         res = res.gsub(/^\(/, '"(').gsub(/\)$/, ')"')
       elsif array?
         if !value.kind_of?(Array)
-          raise "Property that is marked as array is not realy an array!"
+          raise 'Property that is marked as array is not realy an array!'
         end
         res = value.collect { |item| item.to_s }.to_s
-        res[0]='"{'
-        res[-1]= '}"'
+        res[0] = '"{'
+        res[-1] = '}"'
       else
-        res = PGconn.quote_ident(value.to_s.gsub(/,/,"\,"))
+        res = PGconn.quote_ident(value.to_s.gsub(/,/, '\,'))
       end
     end
     res
   end
 
-  def deserialize value
+  def deserialize(value)
     res = ''
     if nested?
       res = get_nested_class(type).load value
@@ -80,7 +80,7 @@ class Property
   end
 
   #returns nested type class by its name
-  def get_nested_class type_name
+  def get_nested_class(type_name)
     type_name.camelize.constantize
   end
 
