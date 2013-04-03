@@ -13,7 +13,7 @@ class ActiveType
   end
 
   # deserialize type object
-  def self.load str
+  def self.load(str)
 
     values = parser.parse_pg_array(str.gsub(/^\(/, '{').gsub(/\)$/, '}'))
     #p "load: #{self.name}, #{values.to_s}"
@@ -32,7 +32,7 @@ class ActiveType
   end
 
   # serialize type object
-  def self.dump inst
+  def self.dump(inst)
 
     str = '('
     str << get_properties.map do |property|
@@ -81,7 +81,7 @@ class ActiveType
   end
 
   # returns nested type class by its name
-  def self.get_nested_class type_name
+  def self.get_nested_class(type_name)
     type_name.camelize.constantize
   end
 end
