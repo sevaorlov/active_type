@@ -30,8 +30,6 @@ Or install it yourself as:
 
     serialize :your_type_name, YourTypeClass
 
-in your model.
-
 Gem also supports arays and one level nested types.
 
 Limitations:
